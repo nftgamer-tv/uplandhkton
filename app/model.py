@@ -47,8 +47,41 @@ class EscrowTransaction(BaseModel):
     containerId:int
     ownerEosId:str
     transactionId:int
+    
+
+class UserDividedStructureCreate(BaseModel):
+    eosId:str
+    structureId:str
+
+class UserDividedStructure(UserDividedStructureCreate):
+    id:str
+    
+class MintNFTData(BaseModel):
+    collection:str
+    nft_schema:str
+    mint_to_acct:str
+    realname:str
+    imghash:str
+    template_id:int
+    howmany:int
+
+
+class UserWaxMapping(BaseModel):
+    id:str
+    eosId:str
+    waxId:str
+    
 
 # MongoDB Converter
+
+def createUserWaxMapping(doc) -> UserWaxMapping:
+    col = UplandUser(
+        id=str(doc['_id']),
+        eosId=doc['eosId'],
+        waxId=doc['waxId'],
+    )
+    return col
+    
 
 
 def createuplandUserModel(doc) -> UplandUser:

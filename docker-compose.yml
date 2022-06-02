@@ -1,0 +1,51 @@
+version: "3.3"
+
+services:
+  mongo:
+    image: mongo:4.2
+    restart: always
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${DB_User}
+      - MONGO_INITDB_ROOT_PASSWORD=${DB_Password}
+      - MONGO_INITDB_DATABASE=${DB_Table}
+    ports:
+      - 27017:27017
+    volumes:
+      - mongodb-data:/data/db
+      - ./devdbsetup.js:/docker-entrypoint-initdb.d/devdbsetup.js:ro
+
+  mongo-express:
+    image: mongo-express
+    restart: always
+    environment:
+      - ME_CONFIG_MONGODB_SERVER=${DB_Service_Name}
+      - ME_CONFIG_MONGODB_PORT=27017
+      - ME_CONFIG_MONGODB_ENABLE_ADMIN=true
+      - ME_CONFIG_MONGODB_AUTH_DATABASE=admin
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=${DB_User}
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=${DB_Password}
+      - ME_CONFIG_BASICAUTH_USERNAME=${MON_EXP_USER}
+      - ME_CONFIG_BASICAUTH_PASSWORD=${MON_EXP_PASS}
+    links:
+      - mongo
+    ports:
+      - 8081:8081
+      
+  upland-rentals:
+    build: .
+    command: uvicorn main:app --host 0.0.0.0 --port 8090 --reload
+    restart: always
+    environment:
+      - DB_TABLE=${DB_Table}
+      - DB_URL=${DB_URL}
+    expose: 
+      - 8090
+    ports:
+      - 8090:8090
+    depends_on:
+      - mongo
+
+volumes:
+  mongodb-data:
+    name: mongodb-database
+
