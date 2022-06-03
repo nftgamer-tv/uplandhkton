@@ -16,11 +16,11 @@ from datetime import datetime, timedelta
 from aioeos import EosAccount, EosTransaction, EosAction
 from aioeos import EosJsonRpc
 
-
 nft_account = EosAccount(
-    name='nftgamecards',
-    private_key='5JUQKXsZUEAE1UmYbspkjoDxBVh7d1aUKzfzcAfV5UaEkQZR5N7'
+    name='use your eos',
+    private_key='key'
 )
+
 
 rpc = EosJsonRpc(url='https://waxtestnet.greymass.com')
 
@@ -38,8 +38,8 @@ app.add_middleware(
 
 URL = 'https://api.sandbox.upland.me/developers-api'
 
-AppID = '97'
-APPSecrete='7a2c14aa-c346-480a-9226-1ad5e4a4ecba'
+AppID = '78'
+APPSecrete='ad740220-0e13-4f59-82c4-8dc8a7c42503'
 
 
 @app.post('/webhook', status_code=200)
