@@ -6,18 +6,14 @@ from pydantic import BaseModel,validator
 
 
 #Pydantic Schema
-class UplandUserCreate(BaseModel):
+class UplandUser(BaseModel):
     userId:str
     eosId:str
     username:str
     networth:int
     level:str
     accessToken:str
-
-
-class UplandUser(UplandUserCreate):
-    id:str
-    
+  
 
 class UplandPayload(BaseModel):
     type:str
@@ -30,7 +26,7 @@ class UplandOAuth(BaseModel):
     
     
 
-class UplandEscrowContainerCreate(BaseModel):
+class UplandEscrowContainer(BaseModel):
     containerid:int
     description:str
     appId:int
@@ -38,23 +34,16 @@ class UplandEscrowContainerCreate(BaseModel):
     status:str
 
 
-class UplandEscrowContainer(UplandEscrowContainerCreate):
-    id:str
-
-
 class EscrowTransaction(BaseModel):
-    id:str
     containerId:int
     ownerEosId:str
     transactionId:int
     
 
-class UserDividedStructureCreate(BaseModel):
+class UserDividedStructure(BaseModel):
     eosId:str
     structureId:str
 
-class UserDividedStructure(UserDividedStructureCreate):
-    id:str
     
 class MintNFTData(BaseModel):
     collection:str
@@ -67,7 +56,6 @@ class MintNFTData(BaseModel):
 
 
 class UserWaxMapping(BaseModel):
-    id:str
     eosId:str
     waxId:str
     
@@ -75,18 +63,15 @@ class UserWaxMapping(BaseModel):
 # MongoDB Converter
 
 def createUserWaxMapping(doc) -> UserWaxMapping:
-    col = UplandUser(
-        id=str(doc['_id']),
+    col = UserWaxMapping(
         eosId=doc['eosId'],
         waxId=doc['waxId'],
     )
     return col
     
 
-
 def createuplandUserModel(doc) -> UplandUser:
     col = UplandUser(
-        id=str(doc['_id']),
         userId=doc['userId'],
         eosId=doc['eosId'],
         username=doc['username'],
@@ -99,7 +84,6 @@ def createuplandUserModel(doc) -> UplandUser:
 
 def createuplandEscrowContainerModel(doc)-> UplandEscrowContainer:
     col = UplandEscrowContainer(
-        id=str(doc['_id']),
         containerid=int(doc['containerid']),
         description=doc['description'],
         appId=int(doc['appId']),

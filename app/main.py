@@ -7,8 +7,8 @@ import httpx
 from typing import List
 from model import UserWaxMapping
 import database as database
-from model import MintNFTData, UplandPayload, UplandUser,UplandUserCreate,UplandOAuth, UserDividedStructureCreate
-from model import UplandEscrowContainer, UplandEscrowContainerCreate
+from model import MintNFTData, UplandPayload, UplandUser,UplandOAuth, UserDividedStructure
+from model import UplandEscrowContainer
 from datetime import datetime, timedelta
 
 ## Testnet testing
@@ -58,12 +58,16 @@ async def upland_webhook(payload:UplandPayload):
         await savedAuthenticatedUser(payload.data)
     elif payload.type == 'TransactionToEscrowCreated':
         saveEscrowTransaction(payload.data)
+        user_wax = database.get_user_wax_mapping(payload.data['ownerEosId'])
+        nft =  MintNFTData(collection='uplandrentct',
+                           nft_schema='apartments',
+                           mint_to_acct=user_wax.waxId,
+                           realname='Apartment',
+                           imghash='QmbKfekKYtDmpeoc19VELq7UGEeJNKQmF1HV6TYSFtmU4o',
+                           template_id=448297,howmany=2)
+        res = await mintNFT(nft)
+        print(res)
 
-
-# @app.get('/upland/players', status_code=200, response_model=List[UplandUser])
-# async def upland_players():
-#     players = database.fetch_upland_players()
-#     return players
 
 
 @app.get('/upland/user/{eosId}', status_code=200, response_model=UplandUser)
@@ -77,6 +81,10 @@ async def map_user_wax_address(eosId:str, waxId:str):
     return userWax
 
 
+@app.get('/upland/user/{eosId}/wax/', status_code=200, response_model=UserWaxMapping)
+async def get_user_wax_address(eosId:str):
+    userWax = database.get_user_wax_mapping(eosId)
+    return userWax
 
 
 @app.post('/upland/auth', status_code=200, response_model=UplandOAuth)
@@ -128,11 +136,11 @@ async def refreshContainer(id:str):
 
 
 @app.post('/upland/structure/isdivided', status_code=200)
-async def check_if_structure_divide(data:UserDividedStructureCreate):
+async def check_if_structure_divide(data:UserDividedStructure):
     return database.check_if_building_is_divided(data.eosId, data.structureId)
 
 @app.post('/upland/structure/divide', status_code=200)
-async def divide_structure(data:UserDividedStructureCreate):
+async def divide_structure(data:UserDividedStructure):
     return database.divide_structure(data)
     
 
@@ -161,8 +169,7 @@ async def savedAuthenticatedUser(data):
         r = client.get(f'{URL}/user/profile')
         if r.status_code == 200:
             userData = r.json()
-            saveUser = UplandUserCreate(userId=userData['id'],eosId=userData['eosId'],accessToken=data['accessToken'],username=userData['username'],networth=userData['networth'],level=userData['level'])
-            user = database.add_upland_user(saveUser)
+            user = database.add_upland_user(userData)
             print(user)
 
 

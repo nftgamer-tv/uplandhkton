@@ -20,15 +20,17 @@ userdividedstructure = database.userdividedstructure
 userwaxmapping = database.userwaxmapping
 
 
-def add_upland_user(data:model.UplandUser):
-    doc = fetch_user_by_Id(data.userId)
-    if doc is None:
-        doc = uplandusers.insert_one(data.dict())
-        return model.createuplandUserModel(doc)
+
+#  saveUser = UplandUserCreate(userId=userData['id'],eosId=userData['eosId'],accessToken=data['accessToken'],username=userData['username'],networth=userData['networth'],level=userData['level'])
+
+def add_upland_user(data):
+    if uplandusers.count_documents({'userId': data['id']}, limit = 1) == 0:
+        doc = uplandusers.insert_one(data)
+        return doc
     else:
-        uplandusers.update_one({'_id':doc['_id']}, {'$set': data.dict()})
-        doc = fetch_user_by_Id(data.userId)
-        return model.createuplandUserModel(doc)
+        doc = fetch_user_by_Id(data['id'])
+        count = uplandusers.update_one({'_id':doc['_id']}, {'$set': data})
+        return count
  
 
 def fetch_user_by_Id(userId):
@@ -104,7 +106,7 @@ def check_if_building_is_divided(eosid,structureId):
     #     return False
 
 
-def divide_structure(data:model.UserDividedStructureCreate):
+def divide_structure(data:model.UserDividedStructure):
     doc = userdividedstructure.find_one({'eosId': data.eosId, 'structureId':data.structureId})
     if doc is None:
         doc = userdividedstructure.insert_one(data.dict())
@@ -117,4 +119,9 @@ def save_user_wax(eosId:str,waxId:str):
         return model.createUserWaxMapping(doc)
     else:
         doc = userwaxmapping.find_one({'eosId': eosId, 'waxId':waxId})
+        return model.createUserWaxMapping(doc)
+    
+def get_user_wax_mapping(eosId:str):
+    if userwaxmapping.count_documents({'eosId': eosId}, limit = 1) != 0:
+        doc = userwaxmapping.find_one({'eosId': eosId})
         return model.createUserWaxMapping(doc)
