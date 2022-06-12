@@ -107,10 +107,15 @@ def check_if_building_is_divided(eosid,structureId):
 
 
 def divide_structure(data:model.UserDividedStructure):
-    doc = userdividedstructure.find_one({'eosId': data.eosId, 'structureId':data.structureId})
-    if doc is None:
-        doc = userdividedstructure.insert_one(data.dict())
+    # doc = userdividedstructure.find_one({'eosId': data.eosId, 'structureId':data.structureId})
+    # if doc is None:
+    #     doc = userdividedstructure.insert_one(data.dict())
+    #     return True
+    if not check_if_building_is_divided(data.eosId,data.structureId):
+        userdividedstructure.insert_one(data.dict())
         return True
+    else:
+        return False
 
 
 def save_user_wax(eosId:str,waxId:str):

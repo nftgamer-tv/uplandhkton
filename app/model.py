@@ -3,8 +3,6 @@ from typing import Optional,List
 from pydantic import BaseModel,validator
 
 
-
-
 #Pydantic Schema
 class UplandUser(BaseModel):
     userId:str
@@ -43,6 +41,7 @@ class EscrowTransaction(BaseModel):
 class UserDividedStructure(BaseModel):
     eosId:str
     structureId:str
+    nftIssued:Optional(bool) = False
 
     
 class MintNFTData(BaseModel):

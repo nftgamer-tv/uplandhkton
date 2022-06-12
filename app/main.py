@@ -42,31 +42,31 @@ AppID = '78'
 APPSecrete='ad740220-0e13-4f59-82c4-8dc8a7c42503'
 
 
-@app.post('/webhook', status_code=200)
-async def webhook(request: Request, response: Response):
-    """ Webhook for Upland Hackathon.
-    """
-    content = await request.json()
-    if 'type'  in content:
-        print(content['data'])
-    print(content)
+# @app.post('/webhook', status_code=200)
+# async def webhook(request: Request, response: Response):
+#     """ Webhook for Upland Hackathon.
+#     """
+#     content = await request.json()
+#     if 'type'  in content:
+#         print(content['data'])
+#     print(content)
 
 
 @app.post('/upland/webhook', status_code=200)
 async def upland_webhook(payload:UplandPayload):
     if payload.type == 'AuthenticationSuccess':
         await savedAuthenticatedUser(payload.data)
-    elif payload.type == 'TransactionToEscrowCreated':
-        saveEscrowTransaction(payload.data)
-        user_wax = database.get_user_wax_mapping(payload.data['ownerEosId'])
-        nft =  MintNFTData(collection='uplandrentct',
-                           nft_schema='apartments',
-                           mint_to_acct=user_wax.waxId,
-                           realname='Apartment',
-                           imghash='QmbKfekKYtDmpeoc19VELq7UGEeJNKQmF1HV6TYSFtmU4o',
-                           template_id=448297,howmany=2)
-        res = await mintNFT(nft)
-        print(res)
+    # elif payload.type == 'TransactionToEscrowCreated':
+    #     saveEscrowTransaction(payload.data)
+    #     user_wax = database.get_user_wax_mapping(payload.data['ownerEosId'])
+    #     nft =  MintNFTData(collection='uplandrentct',
+    #                        nft_schema='apartments',
+    #                        mint_to_acct=user_wax.waxId,
+    #                        realname='Apartment',
+    #                        imghash='QmbKfekKYtDmpeoc19VELq7UGEeJNKQmF1HV6TYSFtmU4o',
+    #                        template_id=448297,howmany=2)
+    #     res = await mintNFT(nft)
+    #     print(res)
 
 
 
@@ -162,6 +162,7 @@ async def mintNft(data:MintNFTData):
     return response
 
 
+
 async def savedAuthenticatedUser(data):
     auth = 'Bearer ' + data['accessToken']
     headers = {'Authorization': auth}
@@ -171,6 +172,17 @@ async def savedAuthenticatedUser(data):
             userData = r.json()
             user = database.add_upland_user(userData)
             print(user)
+            
+async def storeAppAuthenticatedUser(data):
+    auth = 'Bearer ' + data['accessToken']
+    headers = {'Authorization': auth}
+    with httpx.Client(headers=headers) as client:
+        r = client.get(f'{URL}/user/profile')
+        if r.status_code == 200:
+            userData = r.json()
+            user = UplandUser(**userData)
+            user = database.add_upland_user(userData)
+            print(user)
 
 
 def saveEscrowTransaction(data):
@@ -178,24 +190,5 @@ def saveEscrowTransaction(data):
     print(doc)
         
         
-async def mintNFT(data:MintNFTData):
-    action = EosAction(account='nftgamecards',name='mintcard',authorization=[nft_account.authorization('active')],data={
-            'collection':data.collection,
-            'schema':data.nft_schema,
-            'mint_to_acct': data.mint_to_acct,
-            'realname': data.realname,
-            'imghash': data.imghash,
-            'template_id': data.template_id,
-            'howmany':data.howmany
-        })
-    block = await rpc.get_head_block()
-    transaction = EosTransaction(expiration=datetime.now() + timedelta(minutes=2),
-                                 ref_block_num=block['block_num'] & 65535,
-                                 ref_block_prefix=block['ref_block_prefix'],
-                                 actions=[action])
-    try:
-        response = await rpc.sign_and_push_transaction(transaction, keys=[nft_account.key])
-        return response
-    except Exception as e:
-        print(str(e))
+
     
